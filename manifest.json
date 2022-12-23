@@ -1,0 +1,11 @@
+{
+	"id": "obsidian-nl-syntax-highlight",
+	"name": "Natural Language Syntax Highlighting",
+	"version": "0.1.0",
+	"minAppVersion": "0.15.0",
+	"description": "Highlight adjectives, nouns, adverbs, verbs, and conjunctions in the editor",
+	"author": "artisticat",
+	"authorUrl": "https://github.com/artisticat1",
+	"fundingUrl": "https://ko-fi.com/artisticat",
+	"isDesktopOnly": false
+}
