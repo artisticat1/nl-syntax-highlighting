@@ -1,12 +1,19 @@
-/*
-
-This CSS file will be included with your plugin, and
-available in the app when your plugin is enabled.
-
-If your plugin does not need CSS, delete this file.
-
-*/
+.adjective {
+    color: #b97a0a;
+}
 
 .noun {
-    color: rgb(0, 115, 255);
+    color: #ce4924;
+}
+
+.adverb {
+    color: #c333a7;
+}
+
+.verb {
+    color: #177eB8;
+}
+
+.conjunction {
+    color: #01934e;
 }
