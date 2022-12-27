@@ -85,7 +85,6 @@ function decosByLineToDecorationSet(view: EditorView, decorationsByLine: {[lineN
         const widgets = decorationsByLine[lineNumber];
         const lineStart = view.state.doc.line(lineNumber).from;
 
-        // TODO: FIX RangeError: Mark decorations may not be empty
 
         const offsetWidgets = widgets.map((decoSpec => {
             return Decoration.mark({
