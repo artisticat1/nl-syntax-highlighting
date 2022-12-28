@@ -3,6 +3,7 @@ import NLSyntaxHighlightPlugin from 'main';
 
 
 export interface NLSyntaxHighlightPluginSettings {
+	classToApplyHighlightingTo: string,
 	adjectiveEnabled: boolean,
 	adjectiveColor: string,
 	nounEnabled: boolean,
@@ -16,6 +17,7 @@ export interface NLSyntaxHighlightPluginSettings {
 }
 
 export const DEFAULT_SETTINGS: NLSyntaxHighlightPluginSettings = {
+	classToApplyHighlightingTo: "",
 	adjectiveEnabled: true,
 	adjectiveColor: "#b97a0a",
 	nounEnabled: true,
@@ -175,7 +177,20 @@ export class NLSyntaxHighlightSettingTab extends PluginSettingTab {
 				this.plugin.settings.conjunctionColor = value;
 				await this.plugin.saveSettings();
 				this.plugin.reloadStyle();
-		}));
+			}));
+			
+			
+			
+			new Setting(containerEl)
+			.setName('CSS class to apply syntax highlighting to')
+			.setDesc('If specified, the syntax highlighting will only be applied to notes with the specified "cssclass" property in their YAML.')
+			.addText(text => text
+				.setValue(this.plugin.settings.classToApplyHighlightingTo)
+				.onChange(async (value) => {
+					this.plugin.settings.classToApplyHighlightingTo = value;
+					await this.plugin.saveSettings();
+					this.plugin.reloadStyle();
+				}));
 
 	}
 }

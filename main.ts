@@ -39,7 +39,12 @@ export default class NLSyntaxHighlightPlugin extends Plugin {
 
 		for (let i = 0; i < partsOfSpeech.length; i++) {
 			if (enabled[i]) {
-				style = style.concat(`.${partsOfSpeech[i]} { color: ${colors[i]} }\n`);
+				if (settings.classToApplyHighlightingTo.length > 0) {
+					style = style.concat(`.${settings.classToApplyHighlightingTo} .${partsOfSpeech[i]} { color: ${colors[i]} }\n`);
+				}
+				else {
+					style = style.concat(`.${partsOfSpeech[i]} { color: ${colors[i]} }\n`);
+				}
 			}
 		}
 
