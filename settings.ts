@@ -183,7 +183,7 @@ export class NLSyntaxHighlightSettingTab extends PluginSettingTab {
 			
 			new Setting(containerEl)
 			.setName('CSS class to apply syntax highlighting to')
-			.setDesc('If specified, the syntax highlighting will only be applied to notes with the specified "cssclass" property in their YAML.')
+			.setDesc('If specified, the syntax highlighting will only be applied to notes with the "cssclass" property in their YAML equal to the specified value.')
 			.addText(text => text
 				.setValue(this.plugin.settings.classToApplyHighlightingTo)
 				.onChange(async (value) => {
