@@ -1,10 +1,13 @@
 import { Plugin } from 'obsidian';
 import { NLSyntaxHighlightViewPlugin } from 'syntaxHighlight';
 import { NLSyntaxHighlightPluginSettings, DEFAULT_SETTINGS, NLSyntaxHighlightSettingTab } from 'settings';
+import { Extension } from '@codemirror/state';
 
 
 export default class NLSyntaxHighlightPlugin extends Plugin {
 	settings: NLSyntaxHighlightPluginSettings;
+	extensions: Extension[];
+	wordsToOverrideDict: {[word: string]: string};
 	styleEl: Element;
 
 
@@ -12,7 +15,10 @@ export default class NLSyntaxHighlightPlugin extends Plugin {
 		await this.loadSettings();
 		this.addSettingTab(new NLSyntaxHighlightSettingTab(this.app, this));
 
-		this.registerEditorExtension(NLSyntaxHighlightViewPlugin.extension);
+		this.loadWordsToOverrideDict();
+
+		this.extensions = [NLSyntaxHighlightViewPlugin.extension];
+		this.registerEditorExtension(this.extensions);
 
 		this.styleEl = document.head.createEl("style");
 		this.reloadStyle();
@@ -53,5 +59,26 @@ export default class NLSyntaxHighlightPlugin extends Plugin {
 
 	reloadStyle() {
 		this.styleEl.textContent = this.convertSettingsToStyle(this.settings);
+	}
+
+	loadWordsToOverrideDict() {
+		const dict: {[word: string]: string} = {};
+
+		const lines = this.settings.wordsToOverride.split("\n");
+		lines.forEach(val => {
+			const line = val.replaceAll(" ", "").split(":");
+
+			if (line[1])
+				dict[line[0]] = line[1];
+		});
+
+		this.wordsToOverrideDict = dict;
+	}
+
+	reloadEditorExtensions() {
+		this.extensions.pop();
+		this.app.workspace.updateOptions();
+		this.extensions.push(NLSyntaxHighlightViewPlugin.extension);
+		this.app.workspace.updateOptions();
 	}
 }

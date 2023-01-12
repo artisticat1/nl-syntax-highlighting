@@ -1,6 +1,7 @@
 import { EditorView, ViewUpdate, Decoration, DecorationSet, ViewPlugin } from "@codemirror/view";
 import nlp from "compromise";
 import CompromiseView from "compromise/types/view/one";
+import NLSyntaxHighlightPlugin from "main";
 
 
 export interface DecorationSpec {
@@ -49,6 +50,9 @@ function getDecosOnLine(view: EditorView, lineNumber: number) {
     wordsToHighlight["verb"] = verbs;
     wordsToHighlight["conjunction"] = conjunctions;
 
+    // @ts-ignore
+    const plugin:NLSyntaxHighlightPlugin = window.app.plugins.plugins['obsidian-nl-syntax-highlight'];
+
 
     for (const partOfSpeech of Object.keys(wordsToHighlight)) {
         const words = wordsToHighlight[partOfSpeech];
@@ -65,7 +69,10 @@ function getDecosOnLine(view: EditorView, lineNumber: number) {
 
             if (start === end) continue;
 
-            widgets.push({partOfSpeech: partOfSpeech, start: start, end: end})
+
+            const truePartOfSpeech = (word.text in plugin.wordsToOverrideDict) ? plugin.wordsToOverrideDict[word.text] : partOfSpeech;
+
+            widgets.push({partOfSpeech: truePartOfSpeech, start: start, end: end})
         }
     }
 

@@ -1,9 +1,8 @@
-import { App, PluginSettingTab, Setting } from 'obsidian';
+import { App, PluginSettingTab, Setting, debounce } from 'obsidian';
 import NLSyntaxHighlightPlugin from 'main';
 
 
 export interface NLSyntaxHighlightPluginSettings {
-	classToApplyHighlightingTo: string,
 	adjectiveEnabled: boolean,
 	adjectiveColor: string,
 	nounEnabled: boolean,
@@ -14,10 +13,11 @@ export interface NLSyntaxHighlightPluginSettings {
 	verbColor: string,
 	conjunctionEnabled: boolean,
 	conjunctionColor: string,
+	classToApplyHighlightingTo: string,
+	wordsToOverride: string,
 }
 
 export const DEFAULT_SETTINGS: NLSyntaxHighlightPluginSettings = {
-	classToApplyHighlightingTo: "",
 	adjectiveEnabled: true,
 	adjectiveColor: "#b97a0a",
 	nounEnabled: true,
@@ -28,6 +28,8 @@ export const DEFAULT_SETTINGS: NLSyntaxHighlightPluginSettings = {
 	verbColor: "#177eB8",
 	conjunctionEnabled: true,
 	conjunctionColor: "#01934e",
+	classToApplyHighlightingTo: "",
+	wordsToOverride: "",
 }
 
 
@@ -178,19 +180,41 @@ export class NLSyntaxHighlightSettingTab extends PluginSettingTab {
 				await this.plugin.saveSettings();
 				this.plugin.reloadStyle();
 			}));
-			
-			
-			
-			new Setting(containerEl)
-			.setName('CSS class to apply syntax highlighting to')
-			.setDesc('If specified, the syntax highlighting will only be applied to notes with the "cssclass" property in their YAML equal to the specified value.')
-			.addText(text => text
-				.setValue(this.plugin.settings.classToApplyHighlightingTo)
+
+
+		
+
+
+		new Setting(containerEl)
+			.setName('Words to override')
+			.setDesc('Occasionally, words may be misclassfied. Type words here to override their classification. Use the format word: part-of-speech, with each word separated by a new line. e.g. snowy: adjective')
+			.addTextArea(text => text
+				.setValue(this.plugin.settings.wordsToOverride)
+				.setPlaceholder(`snowy: adjective
+cloud: noun`)
 				.onChange(async (value) => {
-					this.plugin.settings.classToApplyHighlightingTo = value;
+					this.plugin.settings.wordsToOverride = value;
+					this.plugin.loadWordsToOverrideDict();
+
+					this.plugin.reloadEditorExtensions();
+					debounce(() => {
+						this.plugin.reloadEditorExtensions();
+					}, 1000);
+
 					await this.plugin.saveSettings();
-					this.plugin.reloadStyle();
 				}));
+
+
+		new Setting(containerEl)
+		.setName('CSS class to apply syntax highlighting to')
+		.setDesc('If specified, the syntax highlighting will only be applied to notes with the "cssclass" property in their YAML equal to the specified value.')
+		.addText(text => text
+			.setValue(this.plugin.settings.classToApplyHighlightingTo)
+			.onChange(async (value) => {
+				this.plugin.settings.classToApplyHighlightingTo = value;
+				await this.plugin.saveSettings();
+				this.plugin.reloadStyle();
+			}));
 
 	}
 }
