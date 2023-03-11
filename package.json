@@ -15,6 +15,8 @@
 		"@types/node": "^16.11.6",
 		"@typescript-eslint/eslint-plugin": "5.29.0",
 		"@typescript-eslint/parser": "5.29.0",
+		"@codemirror/state": "^6.0.0",
+		"@codemirror/view": "^6.0.0",
 		"builtin-modules": "3.3.0",
 		"esbuild": "0.14.47",
 		"obsidian": "latest",
