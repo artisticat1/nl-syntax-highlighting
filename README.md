@@ -11,4 +11,4 @@ Colours can be customised in the plugin settings.
 
 ## Acknowledgements
 
-This plugin uses the [compromise](https://github.com/spencermountain/compromise) natural language processing library to detect parts of speetch.
+This plugin uses the [compromise](https://github.com/spencermountain/compromise) natural language processing library to detect parts of speech.
