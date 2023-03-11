@@ -51,7 +51,7 @@ function getDecosOnLine(view: EditorView, lineNumber: number) {
     wordsToHighlight["conjunction"] = conjunctions;
 
     // @ts-ignore
-    const plugin:NLSyntaxHighlightPlugin = window.app.plugins.plugins['obsidian-nl-syntax-highlight'];
+    const plugin:NLSyntaxHighlightPlugin = window.app.plugins.plugins['nl-syntax-highlighting'];
 
 
     for (const partOfSpeech of Object.keys(wordsToHighlight)) {
