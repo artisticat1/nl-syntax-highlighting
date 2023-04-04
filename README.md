@@ -8,6 +8,9 @@ Colours can be customised in the plugin settings.
 
 ![screenshot 2](img/screenshot_2.png)
 
+## Contributing
+
+Any contributions and PRs are welcome.
 
 ## Acknowledgements
 
