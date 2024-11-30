@@ -15,6 +15,7 @@ export interface NLSyntaxHighlightPluginSettings {
 	conjunctionColor: string,
 	classToApplyHighlightingTo: string,
 	wordsToOverride: string,
+	active: boolean,
 }
 
 export const DEFAULT_SETTINGS: NLSyntaxHighlightPluginSettings = {
@@ -30,6 +31,7 @@ export const DEFAULT_SETTINGS: NLSyntaxHighlightPluginSettings = {
 	conjunctionColor: "#01934e",
 	classToApplyHighlightingTo: "",
 	wordsToOverride: "",
+	active: true,
 }
 
 
@@ -46,7 +48,16 @@ export class NLSyntaxHighlightSettingTab extends PluginSettingTab {
 
 		containerEl.empty();
 
-
+		new Setting(containerEl)
+		.setName("Active")
+		.setDesc("Toggle the highlighting on or off")
+		.addToggle(toggle =>
+				toggle.setValue(this.plugin.settings.active)
+					.onChange(async (value) => {
+						this.plugin.settings.active = value;
+						await this.plugin.saveSettings();
+						this.plugin.reloadStyle();
+					}));
 
 		const adjectives = new Setting(containerEl).setName("Adjectives");
 		let adjectiveToggle:HTMLElement;
@@ -215,6 +226,5 @@ cloud: noun`)
 				await this.plugin.saveSettings();
 				this.plugin.reloadStyle();
 			}));
-
 	}
 }

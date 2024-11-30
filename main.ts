@@ -22,6 +22,8 @@ export default class NLSyntaxHighlightPlugin extends Plugin {
 
 		this.styleEl = document.head.createEl("style");
 		this.reloadStyle();
+
+		await this.addCommands();
 	}
 
 	onunload() {
@@ -36,6 +38,18 @@ export default class NLSyntaxHighlightPlugin extends Plugin {
 		await this.saveData(this.settings);
 	}
 
+	async addCommands() {
+		this.addCommand({
+			id: "toggle-active",
+			name: "Toggle natural language highlighting",
+			callback: () => {
+				this.settings.active = !this.settings.active;
+				this.saveSettings();
+				this.reloadStyle();
+			}
+		})
+	}
+
 	convertSettingsToStyle(settings: NLSyntaxHighlightPluginSettings) {
 		let style = "";
 
@@ -44,7 +58,7 @@ export default class NLSyntaxHighlightPlugin extends Plugin {
 		const colors = [settings.adjectiveColor, settings.nounColor, settings.adverbColor, settings.verbColor, settings.conjunctionColor];
 
 		for (let i = 0; i < partsOfSpeech.length; i++) {
-			if (enabled[i]) {
+			if (enabled[i] && settings.active) {
 				if (settings.classToApplyHighlightingTo.length > 0) {
 					style = style.concat(`.${settings.classToApplyHighlightingTo} .${partsOfSpeech[i]} { color: ${colors[i]} }\n`);
 				}
