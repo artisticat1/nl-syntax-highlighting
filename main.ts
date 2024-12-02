@@ -17,9 +17,9 @@ export default class NLSyntaxHighlightPlugin extends Plugin {
 
 		this.loadWordsToOverrideDict();
 
-		this.extensions = [NLSyntaxHighlightViewPlugin.extension];
+		this.extensions = this.settings.enabled ? [NLSyntaxHighlightViewPlugin.extension] : [];
 		this.registerEditorExtension(this.extensions);
-
+		
 		this.styleEl = document.head.createEl("style");
 		this.reloadStyle();
 
@@ -40,14 +40,24 @@ export default class NLSyntaxHighlightPlugin extends Plugin {
 
 	async addCommands() {
 		this.addCommand({
-			id: "toggle-active",
+			id: "toggle-enabled",
 			name: "Toggle natural language highlighting",
-			callback: () => {
-				this.settings.active = !this.settings.active;
-				this.saveSettings();
-				this.reloadStyle();
+			callback: async () => {
+				this.settings.enabled = !this.settings.enabled;
+				await this.saveSettings();
+				this.updateExtensionEnabled(this.settings.enabled);
 			}
 		})
+	}
+
+	updateExtensionEnabled(enabled: boolean) {
+		if (enabled) {
+			this.extensions.push(NLSyntaxHighlightViewPlugin.extension);
+		} else {
+			this.extensions.pop();
+		}
+
+		this.app.workspace.updateOptions(); 
 	}
 
 	convertSettingsToStyle(settings: NLSyntaxHighlightPluginSettings) {
@@ -58,7 +68,7 @@ export default class NLSyntaxHighlightPlugin extends Plugin {
 		const colors = [settings.adjectiveColor, settings.nounColor, settings.adverbColor, settings.verbColor, settings.conjunctionColor];
 
 		for (let i = 0; i < partsOfSpeech.length; i++) {
-			if (enabled[i] && settings.active) {
+			if (enabled[i]) {
 				if (settings.classToApplyHighlightingTo.length > 0) {
 					style = style.concat(`.${settings.classToApplyHighlightingTo} .${partsOfSpeech[i]} { color: ${colors[i]} }\n`);
 				}
@@ -90,9 +100,11 @@ export default class NLSyntaxHighlightPlugin extends Plugin {
 	}
 
 	reloadEditorExtensions() {
-		this.extensions.pop();
-		this.app.workspace.updateOptions();
-		this.extensions.push(NLSyntaxHighlightViewPlugin.extension);
+		if (this.settings.enabled) {
+			this.extensions.pop();
+			this.app.workspace.updateOptions();
+			this.extensions.push(NLSyntaxHighlightViewPlugin.extension);
+		}
 		this.app.workspace.updateOptions();
 	}
 }
