@@ -38,10 +38,10 @@ export default class NLSyntaxHighlightPlugin extends Plugin {
 		await this.saveData(this.settings);
 	}
 
-	async addCommands() {
+	addCommands() {
 		this.addCommand({
 			id: "toggle-enabled",
-			name: "Toggle natural language highlighting",
+			name: "Toggle on/off",
 			callback: async () => {
 				this.settings.enabled = !this.settings.enabled;
 				await this.saveSettings();
