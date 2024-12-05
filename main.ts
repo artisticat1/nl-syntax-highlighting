@@ -23,7 +23,7 @@ export default class NLSyntaxHighlightPlugin extends Plugin {
 		this.styleEl = document.head.createEl("style");
 		this.reloadStyle();
 
-		await this.addCommands();
+		this.addCommands();
 	}
 
 	onunload() {
