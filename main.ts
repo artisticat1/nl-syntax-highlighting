@@ -17,11 +17,13 @@ export default class NLSyntaxHighlightPlugin extends Plugin {
 
 		this.loadWordsToOverrideDict();
 
-		this.extensions = [NLSyntaxHighlightViewPlugin.extension];
+		this.extensions = this.settings.enabled ? [NLSyntaxHighlightViewPlugin.extension] : [];
 		this.registerEditorExtension(this.extensions);
-
+		
 		this.styleEl = document.head.createEl("style");
 		this.reloadStyle();
+
+		this.addCommands();
 	}
 
 	onunload() {
@@ -34,6 +36,28 @@ export default class NLSyntaxHighlightPlugin extends Plugin {
 
 	async saveSettings() {
 		await this.saveData(this.settings);
+	}
+
+	addCommands() {
+		this.addCommand({
+			id: "toggle-enabled",
+			name: "Toggle on/off",
+			callback: async () => {
+				this.settings.enabled = !this.settings.enabled;
+				await this.saveSettings();
+				this.updateExtensionEnabled(this.settings.enabled);
+			}
+		})
+	}
+
+	updateExtensionEnabled(enabled: boolean) {
+		if (enabled) {
+			this.extensions.push(NLSyntaxHighlightViewPlugin.extension);
+		} else {
+			this.extensions.pop();
+		}
+
+		this.app.workspace.updateOptions(); 
 	}
 
 	convertSettingsToStyle(settings: NLSyntaxHighlightPluginSettings) {
@@ -76,9 +100,11 @@ export default class NLSyntaxHighlightPlugin extends Plugin {
 	}
 
 	reloadEditorExtensions() {
-		this.extensions.pop();
-		this.app.workspace.updateOptions();
-		this.extensions.push(NLSyntaxHighlightViewPlugin.extension);
+		if (this.settings.enabled) {
+			this.extensions.pop();
+			this.app.workspace.updateOptions();
+			this.extensions.push(NLSyntaxHighlightViewPlugin.extension);
+		}
 		this.app.workspace.updateOptions();
 	}
 }
