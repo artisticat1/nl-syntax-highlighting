@@ -8,6 +8,8 @@ Colours can be customised in the plugin settings.
 
 ![screenshot 2](img/screenshot_2.png)
 
+The highlighting can be toggled on or off at any time via the command **Natural Language Syntax Highlighting: Toggle on/off** in the Command palette.
+
 ## Contributing
 
 Any contributions and PRs are welcome.
