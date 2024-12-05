@@ -1,7 +1,7 @@
 {
 	"id": "nl-syntax-highlighting",
 	"name": "Natural Language Syntax Highlighting",
-	"version": "0.3.0",
+	"version": "0.4.0",
 	"minAppVersion": "0.15.0",
 	"description": "Highlight adjectives, nouns, adverbs, verbs, and conjunctions in the editor",
 	"author": "artisticat",
