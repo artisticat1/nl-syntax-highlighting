@@ -59,6 +59,9 @@ export class NLSyntaxHighlightSettingTab extends PluginSettingTab {
 						this.plugin.updateExtensionEnabled(value);
 					}));
 
+
+		new Setting(containerEl).setName("Parts of speech").setHeading();
+
 		const adjectives = new Setting(containerEl).setName("Adjectives");
 		let adjectiveToggle:HTMLElement;
 
@@ -193,8 +196,7 @@ export class NLSyntaxHighlightSettingTab extends PluginSettingTab {
 			}));
 
 
-		
-
+		new Setting(containerEl).setName("Misc").setHeading();
 
 		new Setting(containerEl)
 			.setName('Words to override')
