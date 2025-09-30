@@ -128,18 +128,26 @@ export const NLSyntaxHighlightViewPlugin = ViewPlugin.fromClass(class {
                 // Check whether the user is typing
                 let changeCount = 0;
                 let lineChangedNumber = 0;
-                let singleCharacterInserted = true;
+                let singleCharacterChanged = true;
 
                 update.changes.iterChangedRanges((fromA, toA, fromB, toB) => {
                     changeCount += 1;
-                    if (changeCount > 1) singleCharacterInserted = false;
+                    if (changeCount > 1) {
+                        singleCharacterChanged = false;
+                        return;
+                    }
 
-                    if (!((fromA === toA) && (toB === fromB + 1))) singleCharacterInserted = false;
+                    const charsRemoved = toA - fromA;
+                    const charsAdded = toB - fromB;
+                    if (!((charsRemoved === 0 && charsAdded === 1) || (charsRemoved === 1 && charsAdded === 0))) {
+                        singleCharacterChanged = false;
+                        return;
+                    } 
 
                     lineChangedNumber = update.view.state.doc.lineAt(toB).number;
                 })
 
-                if (singleCharacterInserted) {
+                if (singleCharacterChanged) {
                     // Update decorations on the line the user is currently on
                     this.decorationsByLine[lineChangedNumber] = getDecosOnLine(update.view, lineChangedNumber);
                 }
