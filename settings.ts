@@ -1,5 +1,7 @@
 import { App, PluginSettingTab, Setting, debounce } from 'obsidian';
 import NLSyntaxHighlightPlugin from 'main';
+import { SupportedLanguage, SUPPORTED_LANGUAGES } from 'src/nlp/languages';
+import { createAdapter } from 'src/nlp/registry';
 
 
 export interface NLSyntaxHighlightPluginSettings {
@@ -16,6 +18,7 @@ export interface NLSyntaxHighlightPluginSettings {
 	classToApplyHighlightingTo: string,
 	wordsToOverride: string,
 	enabled: boolean,
+	language: SupportedLanguage,
 }
 
 export const DEFAULT_SETTINGS: NLSyntaxHighlightPluginSettings = {
@@ -32,21 +35,42 @@ export const DEFAULT_SETTINGS: NLSyntaxHighlightPluginSettings = {
 	classToApplyHighlightingTo: "",
 	wordsToOverride: "",
 	enabled: true,
+	language: "en",
 }
 
 
 export class NLSyntaxHighlightSettingTab extends PluginSettingTab {
 	plugin: NLSyntaxHighlightPlugin;
+	private debouncedReload: () => void;
 
 	constructor(app: App, plugin: NLSyntaxHighlightPlugin) {
 		super(app, plugin);
 		this.plugin = plugin;
+		this.debouncedReload = debounce(() => {
+			this.plugin.reloadEditorExtensions();
+		}, 1000);
 	}
 
 	display(): void {
 		const {containerEl} = this;
 
 		containerEl.empty();
+
+		new Setting(containerEl)
+		.setName("Language")
+		.setDesc("Select the language for syntax analysis")
+		.addDropdown(dropdown => {
+			for (const lang of SUPPORTED_LANGUAGES) {
+				dropdown.addOption(lang.id, lang.label);
+			}
+			dropdown.setValue(this.plugin.settings.language)
+				.onChange(async (value) => {
+					this.plugin.settings.language = value as SupportedLanguage;
+					await this.plugin.saveSettings();
+					this.plugin.nlpAdapter = createAdapter(value);
+					this.plugin.reloadEditorExtensions();
+				});
+		});
 
 		new Setting(containerEl)
 		.setName("Enabled")
@@ -200,7 +224,7 @@ export class NLSyntaxHighlightSettingTab extends PluginSettingTab {
 
 		new Setting(containerEl)
 			.setName('Words to override')
-			.setDesc('Occasionally, words may be misclassfied. Type words here to override their classification. Use the format word: part-of-speech, with each word separated by a new line. e.g. snowy: adjective')
+			.setDesc('Occasionally, words may be misclassified. Type words here to override their classification. Use the format word: part-of-speech, with each word separated by a new line. e.g. snowy: adjective. Note: overrides apply to all languages.')
 			.addTextArea(text => text
 				.setValue(this.plugin.settings.wordsToOverride)
 				.setPlaceholder(`snowy: adjective
@@ -208,12 +232,7 @@ cloud: noun`)
 				.onChange(async (value) => {
 					this.plugin.settings.wordsToOverride = value;
 					this.plugin.loadWordsToOverrideDict();
-
-					this.plugin.reloadEditorExtensions();
-					debounce(() => {
-						this.plugin.reloadEditorExtensions();
-					}, 1000);
-
+					this.debouncedReload();
 					await this.plugin.saveSettings();
 				}));
 

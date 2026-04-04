@@ -1,20 +1,12 @@
 import { EditorView, ViewUpdate, Decoration, DecorationSet, ViewPlugin } from "@codemirror/view";
-import nlp from "compromise";
-import CompromiseView from "compromise/types/view/one";
+import { Range } from "@codemirror/state";
+import { PosMatch } from "src/nlp/types";
 import NLSyntaxHighlightPlugin from "main";
-
-
-export interface DecorationSpec {
-    partOfSpeech: string,
-    // Start and end are measured from the start of the *line* the decoration is on
-    start: number,
-    end: number
-}
 
 
 function getAllDecosByLine(view: EditorView) {
 
-    const widgets:{[lineNumber: number]: DecorationSpec[]} = {};
+    const widgets:{[lineNumber: number]: PosMatch[]} = {};
 
     for (const visibleRange of view.visibleRanges) {
         const startLine = view.state.doc.lineAt(visibleRange.from).number;
@@ -29,76 +21,44 @@ function getAllDecosByLine(view: EditorView) {
 }
 
 
-function getDecosOnLine(view: EditorView, lineNumber: number) {
-	const widgets = [];
-
-    const line = view.state.doc.line(lineNumber);
-    const docText = view.state.sliceDoc(line.from, line.to);
-
-    const doc = nlp(docText);
-    const wordsToHighlight: { [partOfSpeech: string]: CompromiseView }  = {};
-
-    const adjectives = doc.adjectives();
-    const nouns = doc.match("#Noun").not("#Pronoun").not("#Possessive");
-    const adverbs = doc.adverbs();
-    const verbs = doc.match("#Verb");
-    const conjunctions = doc.conjunctions();
-
-    wordsToHighlight["adjective"] = adjectives;
-    wordsToHighlight["noun"] = nouns;
-    wordsToHighlight["adverb"] = adverbs;
-    wordsToHighlight["verb"] = verbs;
-    wordsToHighlight["conjunction"] = conjunctions;
-
+function getDecosOnLine(view: EditorView, lineNumber: number): PosMatch[] {
     // @ts-ignore
     const plugin:NLSyntaxHighlightPlugin = window.app.plugins.plugins['nl-syntax-highlighting'];
 
+    if (!plugin?.nlpAdapter) return [];
 
-    for (const partOfSpeech of Object.keys(wordsToHighlight)) {
-        const words = wordsToHighlight[partOfSpeech];
-        // console.log(words);
+    const line = view.state.doc.line(lineNumber);
+    const docText = view.state.sliceDoc(line.from, line.to);
+    const normalizedText = docText.normalize("NFC");
 
-        // Use .out("offset") to get the word's start and end indices in the document
-        for (const word of words.out("offset")) {
+    const matches = plugin.nlpAdapter.analyzeLine(normalizedText);
 
-            const offset = word.offset;
-            const start = offset.start;
+    return matches.map(match => {
+        const wordText = normalizedText.slice(match.start, match.end);
+        const overridden = (wordText in plugin.wordsToOverrideDict)
+            ? plugin.wordsToOverrideDict[wordText]
+            : match.partOfSpeech;
 
-            // Use .terms[0].offset to ignore punctuation
-            const end = start + word.terms[0].offset.length;
-
-            if (start === end) continue;
-
-
-            const truePartOfSpeech = (word.text in plugin.wordsToOverrideDict) ? plugin.wordsToOverrideDict[word.text] : partOfSpeech;
-
-            widgets.push({partOfSpeech: truePartOfSpeech, start: start, end: end})
-        }
-    }
-
-	return widgets;
+        return { partOfSpeech: overridden, start: match.start, end: match.end };
+    });
 }
 
 
-function decosByLineToDecorationSet(view: EditorView, decorationsByLine: {[lineNumber: number]: DecorationSpec[]}) {
+function decosByLineToDecorationSet(view: EditorView, decorationsByLine: {[lineNumber: number]: PosMatch[]}) {
 
-    const allWidgets = [];
-
-    // Add lineStart to each of the decorations' positions
-    // And return the resulting widgets
+    const allWidgets: Range<Decoration>[] = [];
 
     for (const lineNumberStr of Object.keys(decorationsByLine)) {
         const lineNumber = parseInt(lineNumberStr);
         const widgets = decorationsByLine[lineNumber];
         const lineStart = view.state.doc.line(lineNumber).from;
 
-
-        const offsetWidgets = widgets.map((decoSpec => {
+        const offsetWidgets = widgets.map((match => {
             return Decoration.mark({
                     inclusive: true,
                     attributes: {},
-                    class: decoSpec.partOfSpeech
-            }).range(decoSpec.start + lineStart, decoSpec.end + lineStart);
+                    class: match.partOfSpeech
+            }).range(match.start + lineStart, match.end + lineStart);
         }));
 
         allWidgets.push(...offsetWidgets);
@@ -110,7 +70,7 @@ function decosByLineToDecorationSet(view: EditorView, decorationsByLine: {[lineN
 
 export const NLSyntaxHighlightViewPlugin = ViewPlugin.fromClass(class {
     decorations: DecorationSet;
-    decorationsByLine: {[lineNumber: number]: DecorationSpec[]};
+    decorationsByLine: {[lineNumber: number]: PosMatch[]};
 
     constructor(view: EditorView) {
         this.decorationsByLine = getAllDecosByLine(view);
@@ -140,16 +100,13 @@ export const NLSyntaxHighlightViewPlugin = ViewPlugin.fromClass(class {
                 })
 
                 if (singleCharacterInserted) {
-                    // Update decorations on the line the user is currently on
                     this.decorationsByLine[lineChangedNumber] = getDecosOnLine(update.view, lineChangedNumber);
                 }
                 else {
-                    // A bigger change was made to the document -- re-generate all decorations
                     shouldRegenerateAllDecorations = true;
                 }
             }
             else {
-                // Lines were added or removed -- re-generate all decorations
                 shouldRegenerateAllDecorations = true;
             }
 		}
