@@ -1,7 +1,5 @@
 # Natural Language Syntax Highlighting
 
-[![CI](https://github.com/rflpazini/nl-syntax-highlighting/actions/workflows/ci.yml/badge.svg)](https://github.com/rflpazini/nl-syntax-highlighting/actions/workflows/ci.yml)
-
 A plugin for [Obsidian.md](https://obsidian.md/) that highlights adjectives, nouns, adverbs, verbs, and conjunctions in the editor. Inspired by iA Writer.
 
 ![screenshot 1](img/screenshot_1.png)
