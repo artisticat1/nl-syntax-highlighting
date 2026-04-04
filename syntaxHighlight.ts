@@ -1,4 +1,5 @@
 import { EditorView, ViewUpdate, Decoration, DecorationSet, ViewPlugin } from "@codemirror/view";
+import { Range } from "@codemirror/state";
 import { PosMatch } from "src/nlp/types";
 import NLSyntaxHighlightPlugin from "main";
 
@@ -45,7 +46,7 @@ function getDecosOnLine(view: EditorView, lineNumber: number): PosMatch[] {
 
 function decosByLineToDecorationSet(view: EditorView, decorationsByLine: {[lineNumber: number]: PosMatch[]}) {
 
-    const allWidgets = [];
+    const allWidgets: Range<Decoration>[] = [];
 
     for (const lineNumberStr of Object.keys(decorationsByLine)) {
         const lineNumber = parseInt(lineNumberStr);

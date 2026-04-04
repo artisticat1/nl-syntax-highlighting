@@ -1,6 +1,6 @@
 import { App, PluginSettingTab, Setting, debounce } from 'obsidian';
 import NLSyntaxHighlightPlugin from 'main';
-import { SupportedLanguage } from 'src/nlp/types';
+import { SupportedLanguage, SUPPORTED_LANGUAGES } from 'src/nlp/languages';
 import { createAdapter } from 'src/nlp/registry';
 
 
@@ -59,16 +59,18 @@ export class NLSyntaxHighlightSettingTab extends PluginSettingTab {
 		new Setting(containerEl)
 		.setName("Language")
 		.setDesc("Select the language for syntax analysis")
-		.addDropdown(dropdown => dropdown
-			.addOption("en", "English")
-			.addOption("pt-br", "Português (Brasil)")
-			.setValue(this.plugin.settings.language)
-			.onChange(async (value) => {
-				this.plugin.settings.language = value as SupportedLanguage;
-				await this.plugin.saveSettings();
-				this.plugin.nlpAdapter = createAdapter(value as SupportedLanguage);
-				this.plugin.reloadEditorExtensions();
-			}));
+		.addDropdown(dropdown => {
+			for (const lang of SUPPORTED_LANGUAGES) {
+				dropdown.addOption(lang.id, lang.label);
+			}
+			dropdown.setValue(this.plugin.settings.language)
+				.onChange(async (value) => {
+					this.plugin.settings.language = value as SupportedLanguage;
+					await this.plugin.saveSettings();
+					this.plugin.nlpAdapter = createAdapter(value);
+					this.plugin.reloadEditorExtensions();
+				});
+		});
 
 		new Setting(containerEl)
 		.setName("Enabled")

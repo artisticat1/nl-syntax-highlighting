@@ -72,17 +72,19 @@ describe("PortugueseAdapter", () => {
 		]);
 	});
 
-	it("handles NFC normalization for accented characters", () => {
-		// "ação" in NFC vs NFD should both match
-		const nfc = "a\u00E7\u00E3o"; // precomposed: ação
-		const nfd = "ac\u0327a\u0303o"; // decomposed: ação
-		const matchesNfc = adapter.analyzeLine(nfc);
-		const matchesNfd = adapter.analyzeLine(nfd);
-		// Both should produce the same result
-		expect(matchesNfc.length).toBe(matchesNfd.length);
-		if (matchesNfc.length > 0) {
-			expect(matchesNfc[0].partOfSpeech).toBe(matchesNfd[0].partOfSpeech);
-		}
+	it("works with NFC-normalized accented characters (per interface contract)", () => {
+		// Caller is responsible for NFC normalization. Adapter receives NFC text.
+		// "bonito" is in lexicon — accented words like "situação" are also in lexicon
+		const matches = adapter.analyzeLine("situa\u00E7\u00E3o"); // situação (NFC)
+		expect(matches.length).toBe(1);
+		expect(matches[0].partOfSpeech).toBe("noun");
+	});
+
+	it("classifies 'se' as conjunction (not filtered as stop word)", () => {
+		const matches = adapter.analyzeLine("se");
+		expect(matches).toEqual([
+			{ partOfSpeech: "conjunction", start: 0, end: 2 },
+		]);
 	});
 
 	it("analyzes a full Portuguese sentence", () => {

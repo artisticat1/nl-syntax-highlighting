@@ -83,4 +83,10 @@ describe("tokenizeLine", () => {
 			{ word: "guarda-chuva", start: 0, end: 12 },
 		]);
 	});
+
+	it("handles deeply nested markdown without hanging", () => {
+		const tokens = tokenizeLine("**__~~==hello==~~__**");
+		expect(tokens.length).toBe(1);
+		expect(tokens[0].word).toBe("hello");
+	});
 });

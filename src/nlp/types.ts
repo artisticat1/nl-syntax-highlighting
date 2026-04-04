@@ -5,7 +5,8 @@ export interface PosMatch {
 }
 
 export interface NlpAdapter {
+	/** Analyze a single line of text. Caller guarantees NFC normalization. */
 	analyzeLine(text: string): PosMatch[];
 }
 
-export type SupportedLanguage = "en" | "pt-br";
+export type { SupportedLanguage } from "src/nlp/languages";

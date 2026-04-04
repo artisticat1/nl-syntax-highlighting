@@ -4,6 +4,8 @@ import { NLSyntaxHighlightPluginSettings, DEFAULT_SETTINGS, NLSyntaxHighlightSet
 import { Extension } from '@codemirror/state';
 import { NlpAdapter } from 'src/nlp/types';
 import { createAdapter } from 'src/nlp/registry';
+import { isValidLanguage } from 'src/nlp/languages';
+import { sanitizeCssClassName, sanitizeCssColorValue } from 'src/nlp/sanitize';
 import 'src/nlp/english-adapter';
 import 'src/nlp/pt-br/portuguese-adapter';
 
@@ -38,6 +40,9 @@ export default class NLSyntaxHighlightPlugin extends Plugin {
 
 	async loadSettings() {
 		this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+		if (!isValidLanguage(this.settings.language)) {
+			this.settings.language = DEFAULT_SETTINGS.language;
+		}
 	}
 
 	async saveSettings() {
@@ -70,14 +75,16 @@ export default class NLSyntaxHighlightPlugin extends Plugin {
 		const partsOfSpeech = ["adjective", "noun", "adverb", "verb", "conjunction"];
 		const enabled = [settings.adjectiveEnabled, settings.nounEnabled, settings.adverbEnabled, settings.verbEnabled, settings.conjunctionEnabled];
 		const colors = [settings.adjectiveColor, settings.nounColor, settings.adverbColor, settings.verbColor, settings.conjunctionColor];
+		const safeClass = sanitizeCssClassName(settings.classToApplyHighlightingTo);
 
 		for (let i = 0; i < partsOfSpeech.length; i++) {
 			if (enabled[i]) {
-				if (settings.classToApplyHighlightingTo.length > 0) {
-					style = style.concat(`.${settings.classToApplyHighlightingTo} .${partsOfSpeech[i]} { color: ${colors[i]} }\n`);
+				const safeColor = sanitizeCssColorValue(colors[i]);
+				if (safeClass.length > 0) {
+					style = style.concat(`.${safeClass} .${partsOfSpeech[i]} { color: ${safeColor} }\n`);
 				}
 				else {
-					style = style.concat(`.${partsOfSpeech[i]} { color: ${colors[i]} }\n`);
+					style = style.concat(`.${partsOfSpeech[i]} { color: ${safeColor} }\n`);
 				}
 			}
 		}
@@ -104,9 +111,6 @@ export default class NLSyntaxHighlightPlugin extends Plugin {
 	}
 
 	reloadEditorExtensions() {
-		if (!this.settings.enabled) return;
-		this.extensions.length = 0;
-		this.extensions.push(NLSyntaxHighlightViewPlugin.extension);
-		this.app.workspace.updateOptions();
+		this.updateExtensionEnabled(this.settings.enabled);
 	}
 }

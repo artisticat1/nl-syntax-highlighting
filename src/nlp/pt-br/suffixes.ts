@@ -5,7 +5,7 @@ export interface SuffixRule {
 
 // Ordered from longest to shortest suffix — first match wins
 export const PT_BR_SUFFIX_RULES: ReadonlyArray<SuffixRule> = Object.freeze([
-	// Adverbs (highest priority — very reliable suffix)
+	// Adverbs — -mente covers the entire class; do not add -mente words to lexicon.ts
 	{ suffix: "mente", partOfSpeech: "adverb" },
 
 	// Nouns — long suffixes (high confidence)

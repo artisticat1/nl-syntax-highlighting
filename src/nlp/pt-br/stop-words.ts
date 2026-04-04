@@ -60,4 +60,8 @@ export const PT_BR_STOP_WORDS: ReadonlySet<string> = new Set([
 	"tudo", "nada", "algo", "alguem", "alguém", "ninguem", "ninguém",
 	"cada", "todo", "toda", "todos", "todas",
 	"outro", "outra", "outros", "outras",
+
+	// Additional forms and contractions
+	"às", "pra", "nenhum", "nenhuma", "quê",
+	"esses", "daqui",
 ]);

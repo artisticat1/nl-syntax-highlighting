@@ -9,14 +9,18 @@ const MARKDOWN_TRAILING = /(?:\*{1,2}|_{1,2}|~~|`|==|\]\])+$/;
 const PUNCTUATION_LEADING = /^[.,:;!?()"'«»""\u2018\u2019]+/;
 const PUNCTUATION_TRAILING = /[.,:;!?()"'«»""\u2018\u2019]+$/;
 
+const MAX_STRIP_ITERATIONS = 50;
+
 function strip(input: string): { word: string; leadingOffset: number } {
 	let stripped = input;
 	let leadingOffset = 0;
 	let changed = true;
+	let iterations = 0;
 
 	// Iteratively strip markdown and punctuation until stable
-	while (changed) {
+	while (changed && iterations < MAX_STRIP_ITERATIONS) {
 		changed = false;
+		iterations++;
 
 		const leadingMd = stripped.match(MARKDOWN_LEADING);
 		if (leadingMd) {

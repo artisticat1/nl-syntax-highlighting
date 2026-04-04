@@ -1,4 +1,4 @@
-import { describe, it, expect } from "vitest";
+import { describe, it, expect, vi } from "vitest";
 import { createAdapter, registerAdapter } from "src/nlp/registry";
 import { NlpAdapter } from "src/nlp/types";
 import "src/nlp/english-adapter";
@@ -17,18 +17,32 @@ describe("adapter registry", () => {
 		expect(adapter.analyzeLine).toBeTypeOf("function");
 	});
 
-	it("throws for unknown language", () => {
-		expect(() => createAdapter("unknown" as any)).toThrow(
-			"No NLP adapter registered for language: unknown"
+	it("falls back to English for unknown language", () => {
+		const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+		const adapter = createAdapter("unknown");
+		expect(adapter).toBeDefined();
+		expect(adapter.analyzeLine).toBeTypeOf("function");
+		expect(warnSpy).toHaveBeenCalledWith(
+			expect.stringContaining("No adapter for")
 		);
+		warnSpy.mockRestore();
 	});
 
-	it("allows registering a custom adapter", () => {
+	it("warns on re-registration", () => {
+		const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 		const mockAdapter: NlpAdapter = {
 			analyzeLine: () => [],
 		};
 		registerAdapter("en", () => mockAdapter);
+		expect(warnSpy).toHaveBeenCalledWith(
+			expect.stringContaining("Overwriting existing adapter")
+		);
 		const adapter = createAdapter("en");
 		expect(adapter).toBe(mockAdapter);
+		warnSpy.mockRestore();
+
+		// Restore the real adapter by re-importing
+		// (side-effect imports already ran, so we re-register manually)
+		import("src/nlp/english-adapter");
 	});
 });

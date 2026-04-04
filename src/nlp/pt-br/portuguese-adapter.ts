@@ -7,8 +7,7 @@ import { PT_BR_SUFFIX_RULES } from "src/nlp/pt-br/suffixes";
 
 export class PortugueseAdapter implements NlpAdapter {
 	analyzeLine(text: string): PosMatch[] {
-		const normalized = text.normalize("NFC");
-		const tokens = tokenizeLine(normalized);
+		const tokens = tokenizeLine(text);
 		const matches: PosMatch[] = [];
 
 		for (const token of tokens) {
