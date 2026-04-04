@@ -2,6 +2,10 @@ import { Plugin } from 'obsidian';
 import { NLSyntaxHighlightViewPlugin } from 'syntaxHighlight';
 import { NLSyntaxHighlightPluginSettings, DEFAULT_SETTINGS, NLSyntaxHighlightSettingTab } from 'settings';
 import { Extension } from '@codemirror/state';
+import { NlpAdapter } from 'src/nlp/types';
+import { createAdapter } from 'src/nlp/registry';
+import 'src/nlp/english-adapter';
+import 'src/nlp/pt-br/portuguese-adapter';
 
 
 export default class NLSyntaxHighlightPlugin extends Plugin {
@@ -9,6 +13,7 @@ export default class NLSyntaxHighlightPlugin extends Plugin {
 	extensions: Extension[];
 	wordsToOverrideDict: {[word: string]: string};
 	styleEl: Element;
+	nlpAdapter: NlpAdapter;
 
 
 	async onload() {
@@ -16,6 +21,7 @@ export default class NLSyntaxHighlightPlugin extends Plugin {
 		this.addSettingTab(new NLSyntaxHighlightSettingTab(this.app, this));
 
 		this.loadWordsToOverrideDict();
+		this.nlpAdapter = createAdapter(this.settings.language ?? "en");
 
 		this.extensions = this.settings.enabled ? [NLSyntaxHighlightViewPlugin.extension] : [];
 		this.registerEditorExtension(this.extensions);
@@ -51,13 +57,11 @@ export default class NLSyntaxHighlightPlugin extends Plugin {
 	}
 
 	updateExtensionEnabled(enabled: boolean) {
+		this.extensions.length = 0;
 		if (enabled) {
 			this.extensions.push(NLSyntaxHighlightViewPlugin.extension);
-		} else {
-			this.extensions.pop();
 		}
-
-		this.app.workspace.updateOptions(); 
+		this.app.workspace.updateOptions();
 	}
 
 	convertSettingsToStyle(settings: NLSyntaxHighlightPluginSettings) {
@@ -100,11 +104,9 @@ export default class NLSyntaxHighlightPlugin extends Plugin {
 	}
 
 	reloadEditorExtensions() {
-		if (this.settings.enabled) {
-			this.extensions.pop();
-			this.app.workspace.updateOptions();
-			this.extensions.push(NLSyntaxHighlightViewPlugin.extension);
-		}
+		if (!this.settings.enabled) return;
+		this.extensions.length = 0;
+		this.extensions.push(NLSyntaxHighlightViewPlugin.extension);
 		this.app.workspace.updateOptions();
 	}
 }
