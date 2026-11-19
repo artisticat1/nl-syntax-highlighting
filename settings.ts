@@ -1,5 +1,6 @@
 import { App, PluginSettingTab, Setting, debounce } from 'obsidian';
 import NLSyntaxHighlightPlugin from 'main';
+import { NlpLanguage } from "nlp";
 
 
 export interface NLSyntaxHighlightPluginSettings {
@@ -16,6 +17,7 @@ export interface NLSyntaxHighlightPluginSettings {
 	classToApplyHighlightingTo: string,
 	wordsToOverride: string,
 	enabled: boolean,
+	language: NlpLanguage,
 }
 
 export const DEFAULT_SETTINGS: NLSyntaxHighlightPluginSettings = {
@@ -32,6 +34,7 @@ export const DEFAULT_SETTINGS: NLSyntaxHighlightPluginSettings = {
 	classToApplyHighlightingTo: "",
 	wordsToOverride: "",
 	enabled: true,
+	language: "en",
 }
 
 
@@ -59,6 +62,19 @@ export class NLSyntaxHighlightSettingTab extends PluginSettingTab {
 						this.plugin.updateExtensionEnabled(value);
 					}));
 
+
+		new Setting(containerEl)
+		.setName("Language")
+		.setDesc("Language of the text, used for part-of-speech detection. English uses compromise, German uses de-compromise.")
+		.addDropdown(dropdown => dropdown
+			.addOption("en", "English (compromise)")
+			.addOption("de", "Deutsch (de-compromise)")
+			.setValue(this.plugin.settings.language)
+			.onChange(async (value) => {
+				this.plugin.settings.language = value as NlpLanguage;
+				await this.plugin.saveSettings();
+				this.plugin.reloadEditorExtensions();
+			}));
 
 		new Setting(containerEl).setName("Parts of speech").setHeading();
 
