@@ -10,6 +10,10 @@ Colours can be customised in the plugin settings.
 
 The highlighting can be toggled on or off at any time via the command **Natural Language Syntax Highlighting: Toggle on/off** in the Command palette.
 
+Multilanguage support includes:
+- English
+- German (beta)
+
 ## Contributing
 
 Any contributions and PRs are welcome.
