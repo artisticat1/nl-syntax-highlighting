@@ -22,6 +22,7 @@
 		"obsidian": "latest",
 		"tslib": "2.4.0",
 		"typescript": "4.7.4",
-		"compromise": "14.8.1"
+		"compromise": "14.8.1",
+		"de-compromise": "^0.1.2"
 	}
 }
